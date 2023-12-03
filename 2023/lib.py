@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-def input():
-    with open("input.txt", "r") as INPUT:
+def read_input(filename="input.txt"):
+    with open(filename, "r") as INPUT:
         return [l.rstrip("\n") for l in INPUT.readlines()]
 
 

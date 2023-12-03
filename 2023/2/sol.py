@@ -4,18 +4,22 @@ import sys
 sys.path.append("..")
 
 from argparse import ArgumentParser
-from lib import *
+from collections import defaultdict
+from lib import read_input
 
 def parse_args():
     parser = ArgumentParser()
+    parser.add_argument("--filename", default="input.txt")
     return parser.parse_args()
 
 def main():
+    args = parse_args()
+
     limits = { "red": 12, "green": 13, "blue": 14 }
-    _sum = 0
-    powersum = 0
+    game_sum = 0
+    power_sum = 0
     
-    for line in input():
+    for line in read_input(filename=args.filename):
         atleast = {"red": 0, "green": 0, "blue": 0}
         game, blocks = line.split(":")
         game_no = int(game.split()[1])
@@ -31,10 +35,10 @@ def main():
                 if count > limits[color]:
                     #print(f"Game {game_no} impossible as {color} count of {count} exceeds limit of {limits[color]}")
                     game_no = 0
-        _sum += game_no
-        powersum += atleast["red"] * atleast["green"] * atleast["blue"]
-    print(_sum)
-    print(powersum)
+        game_sum += game_no
+        power_sum += atleast["red"] * atleast["green"] * atleast["blue"]
+    print(f"Part 1, sum of possible games given limits {limits}: {game_sum}")
+    print(f"Part 2, sum acorss all games of the product of the least possible counts for all colors: {power_sum}")
 
 if __name__ == "__main__":
     main()
