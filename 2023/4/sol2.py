@@ -18,10 +18,7 @@ def main():
     tree = []
     for idx, line in enumerate(read_input()):
         have, need = (set(l.split()) for l in line.split(":")[1].split("|"))
-        win = len(have.intersection(need))
-        tree.append([])
-        for copy in range(idx+1, idx+1+win):
-            tree[-1].append(copy)
+        tree.append(range(idx+1, idx+1+len(have.intersection(need))))
 
     """
     The last card will not win any copies.
@@ -37,9 +34,7 @@ def main():
     """
     weights = [0] * len(tree)
     for idx in range(len(tree)-1, -1, -1):
-        weights[idx] = 1
-        for child in tree[idx]:
-            weights[idx] += weights[child]
+        weights[idx] = sum(weights[child] for child in tree[idx]) + 1
     print(sum(weights))
 
 if __name__ == "__main__":
