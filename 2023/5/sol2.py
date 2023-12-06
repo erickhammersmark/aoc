@@ -26,32 +26,23 @@ def overlap(val_rng, rng):
     )):
         return ()
 
-    if val_rng[BASE] > rng[BASE]:
-        start = val_rng[BASE]
-    else:
-        start = rng[BASE]
-    if val_max > range_max:
-        end = range_max
-    else:
-        end = val_max
+    start = max(val_rng[BASE], rng[BASE])
+    end = min(val_max, range_max)
     length = 1 + end - start
     return (start, length)
 
-def apply_range(val_rng, rng, reverse=False):
-    if reverse:
-        source, dest, length = rng
-    else:
-        dest, source, length = rng
+def apply_range(val_rng, rng):
+    dest, source, length = rng
     ol = overlap(val_rng, (source, length))
     if not ol:
         return ol
     return (ol[BASE] - source + dest, ol[LEN])
 
-def apply_ranges(val_ranges, ranges, reverse=False):
+def apply_ranges(val_ranges, ranges):
     result = []
     for val_rng in val_ranges:
         for rng in ranges:
-            val_rng_result = apply_range(val_rng, rng, reverse=reverse)
+            val_rng_result = apply_range(val_rng, rng)
             if val_rng_result:
                 result.append(val_rng_result)
     return result
@@ -70,8 +61,8 @@ def main():
     for line in lines[2:]:
         if "map" in line:
             source, dest = line.split()[0].split("-to-")
-            maps[source] = {dest: []}
-            cmap = maps[source][dest]
+            maps[source] = []
+            cmap = maps[source]
         elif line:
             cmap.append(tuple(map(int, line.split())))
 
@@ -81,7 +72,7 @@ def main():
     for n, obj in enumerate(forward):
         if obj == forward[-1]:
             break
-        values = apply_ranges(values, maps[obj][forward[n+1]])
+        values = apply_ranges(values, maps[obj])
     print(min(value[0] for value in values))
 
 if __name__ == "__main__":
