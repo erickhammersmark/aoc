@@ -9,10 +9,9 @@ from lib import *
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument("--filename", default="input.txt")
+    parser.add_argument("--two", action="store_true", default=False)
     return parser.parse_args()
 
-def main():
-    args = parse_args()
+args = parse_args()
 
-if __name__ == "__main__":
-    main()
+
