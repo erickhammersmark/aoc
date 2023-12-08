@@ -34,7 +34,6 @@ def traverse(node, end):
                 return count
 
 if args.two:
-    counts = [traverse(node, "Z") for node in tree.keys() if node.endswith("A")]
-    print(math.lcm(*counts))
+    print(math.lcm(*(traverse(node, "Z") for node in tree.keys() if node.endswith("A"))))
 else:
     print(traverse("AAA", "ZZZ"))
