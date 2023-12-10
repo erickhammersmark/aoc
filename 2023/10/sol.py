@@ -75,22 +75,24 @@ for y, line in enumerate(read_input(filename=args.filename)):
 
 #print(f"S: {S.pos} with links {S.links(board)}")
 
-def find_path(prev, tile, count):
-    if count > 1 and tile.char == "S":
-        return count
+path = [S]
+def find_path(path):
+    if len(path) > 1 and path[-1].char == "S":
+        return path
 
-    for link in tile.links(board):
-        if link == prev:
+    for link in path[-1].links(board):
+        if len(path) > 1 and link == path[-2]:
             continue
 
-        print(tile)
-        new_count = find_path(tile, link, count + 1)
-        if new_count:
-            return new_count
+        new_path = find_path(path + [link])
+        if new_path:
+            return new_path
 
-    return 0
+    return []
 
-print(find_path(None, S, 0))
+path = find_path([S])
+print(int((len(path) - 1) / 2))
+
 """
 | is a vertical pipe connecting north and south.
 - is a horizontal pipe connecting east and west.
