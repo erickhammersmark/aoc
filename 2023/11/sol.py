@@ -15,10 +15,14 @@ def parse_args():
 
 args = parse_args()
 
+orig_lines = read_input(filename=args.filename)
+
 # append the lines without galaxies twice
 lines = []
-for line in read_input(filename=args.filename):
+rows_to_double = []
+for idx, line in enumerate(orig_lines):
     if "#" not in line:
+        rows_to_double.append(idx)
         lines.append(line)
     lines.append(line)
 
@@ -55,4 +59,47 @@ for y, line in enumerate(lines):
 pairs = list(combinations(galaxies, 2))
 
 # up/down/left/right distances are always the same, as long as you proceed toward the destination
-print(sum(abs(dest[0] - src[0]) + abs(dest[1] - src[1]) for src, dest in pairs))
+print(f"Part 1: {sum(abs(dest[0] - src[0]) + abs(dest[1] - src[1]) for src, dest in pairs)}")
+
+if not args.two:
+    sys.exit(0)
+
+# PART TWO LET'S GOOOO
+
+# find all of the galaxies again
+galaxies = []
+for y, line in enumerate(orig_lines):
+    try:
+        idx = -1
+        while True:
+            idx = line.index("#", idx+1)
+            galaxies.append((idx, y))
+    except ValueError:
+        pass
+
+# generate all the combinations again
+pairs = list(combinations(galaxies, 2))
+
+# calculate the distances WAAAAY different
+_sum = 0
+for pair in pairs:
+    horiz = [galaxy[0] for galaxy in pair]
+    vert = [galaxy[1] for galaxy in pair]
+    left = min(horiz)
+    right = max(horiz)
+    top = min(vert)
+    bottom = max(vert)
+
+    delta_x = right - left
+    delta_y = bottom - top
+
+    for col in cols_to_double:
+        if left < col < right:
+            delta_x += 999999
+    for row in rows_to_double:
+        if top < row < bottom:
+            delta_y += 999999
+
+    _sum += delta_x + delta_y
+
+print(_sum)
