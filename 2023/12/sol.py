@@ -25,6 +25,25 @@ args = parse_args()
 
 def count_groups(springs, checksums):
     """
+    Idea is to generate all possible ways to replace the ? with # or .
+    and see which ones make the right groups in the right order.
+    """
+    num_qms = springs.count("?")
+    binary_strings = [f"{n:0{num_qms}b}".replace("0", ".").replace("1", "#") for n in range(0, 2**num_qms)]
+    count = 0
+    for bs in [list(b) for b in binary_strings]:
+        potential_solution = []
+        for char in springs:
+            if char == "?":
+                potential_solution.append(bs.pop(0))
+            else:
+                potential_solution.append(char)
+        if [len(group) for group in filter(lambda x: x, ''.join(potential_solution).split("."))] == checksums:
+            count += 1
+    return count
+
+def old_count_groups(springs, checksums):
+    """
     Walk the input springs, looking for anywhere where checksums[0] fits
     Whereever it fits, put it there, then pass the rest of the springs and checksum[1:] to another call
     If checksum[1:] is empty, just return 1
@@ -120,12 +139,15 @@ def count_groups(springs, checksums):
 
 
 total_count = 0
-for line in read_input(filename=args.filename):
+for idx, line in enumerate(read_input(filename=args.filename)):
     springs, checksums = line.split()
     checksums = list(map(int, checksums.split(",")))
-    springs = [grp for grp in springs.split(".") if grp]
+    if args.two:
+        springs = "?".join((springs, springs, springs, springs, springs))
+        checksums = 5 * checksums
+    #springs = [grp for grp in springs.split(".") if grp]
     line_count = count_groups(springs, checksums)
-    print(f"line: {line}, count {line_count}")
+    print(f"line {idx+1}/1000: {line}, count {line_count}")
     total_count += line_count
 print(total_count)
 
