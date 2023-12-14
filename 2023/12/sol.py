@@ -42,6 +42,73 @@ def count_groups(springs, checksums):
             count += 1
     return count
 
+def new_count_groups(springs, checksums, mid_group = False):
+    #print(f"new_count_groups({springs}, {checksums}, mid_group = {mid_group}")
+    """
+    Use the characters in springs to use up the counts in checksums.
+
+    Every time we have a choice about whether or not to start using up a new checksum,
+    also branch to not start the checksum there. In this case, return the sum of both operations.
+    The call that consumes the current "?" should decrement checksums[0] and call again with the next
+    substring of springs and the mid_group flag True.
+    The call that passes on the current "?" should leave checksums[0] alone and call again with the next
+    substring of springs and the mid_group flag absent.
+
+    If this call contains an empty checksums and springs with no more "#" in it, return 1.
+    If this call finds that we have encountered a "." while mid_group is True and checksums[0] is non-zero, return 0.
+    If this call finds a "." while mid_group is True and checksums[0] is zero, return a recursive call with springs[1:] and checksums[1:]
+    if this call finds a "#" while mid_group is True and checksums[0] is zero, return 0.
+    If this call finds a "?" while mid_group is True and checksums[0] is zero, return a recursive call with springs[1:] and checksums[1:]
+    If this call finds a "?" while mid_group is True and checksums[0] is not zero, decrement checksums[0] and return a recursive call with springs[1:] and checksums
+    If this call finds a "?" while mid_group is False, branch as above.
+    
+    """
+    checksums = checksums[:]
+
+    if not checksums:
+        if "#" in springs:
+            return 0
+        return 1
+
+    if not springs:
+        if any(csum for csum in checksums):
+            return 0
+        return 1
+
+    if springs[0] == ".":
+        if mid_group:
+            if checksums[0] == 0:
+                return new_count_groups(springs[1:], checksums[1:])
+            else:
+                return 0
+        else:
+            return new_count_groups(springs[1:], checksums)
+
+    if springs[0] == "#":
+        if mid_group:
+            if checksums[0] == 0:
+                return 0
+            else:
+                checksums[0] -= 1
+                return new_count_groups(springs[1:], checksums, mid_group=True)
+        else:
+            if checksums[0]:
+                checksums[0] -= 1
+                return new_count_groups(springs[1:], checksums, mid_group=True)
+            else:
+                return 0
+
+    if springs[0] == "?":
+        if mid_group:
+            if checksums[0]:
+                checksums[0] -= 1
+                return new_count_groups(springs[1:], checksums, mid_group=True)
+            else:
+                return new_count_groups(springs[1:], checksums[1:])
+        else:
+            return new_count_groups(springs[1:], [checksums[0] - 1] + checksums[1:], mid_group=True) + new_count_groups(springs[1:], checksums)
+
+
 def old_count_groups(springs, checksums):
     """
     Walk the input springs, looking for anywhere where checksums[0] fits
@@ -49,7 +116,6 @@ def old_count_groups(springs, checksums):
     If checksum[1:] is empty, just return 1
     Otherwise, return whatever the other call returns
     """
-    springs = springs[:]
     checksum = checksums[:]
 
     #print(f"count_groups({springs}, {checksums})")
@@ -146,7 +212,7 @@ for idx, line in enumerate(read_input(filename=args.filename)):
         springs = "?".join((springs, springs, springs, springs, springs))
         checksums = 5 * checksums
     #springs = [grp for grp in springs.split(".") if grp]
-    line_count = count_groups(springs, checksums)
+    line_count = new_count_groups(springs, checksums)
     print(f"line {idx+1}/1000: {line}, count {line_count}")
     total_count += line_count
 print(total_count)
