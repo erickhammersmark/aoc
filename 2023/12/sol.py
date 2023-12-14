@@ -5,11 +5,14 @@ sys.path.append("..")
 
 from argparse import ArgumentParser
 from lib import *
+from multiprocessing import Pool
+
 
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument("--filename", default="input.txt")
     parser.add_argument("--two", action="store_true", default=False)
+    parser.add_argument("--poolsize", type=int, default=8)
     return parser.parse_args()
 
 args = parse_args()
@@ -63,6 +66,9 @@ def count_groups(springs, checksums, mid_group = False):
             return 0
         return 1
 
+    if springs.count("#") + springs.count("?") < sum(checksums):
+        return 0
+
     if not springs:
         if any(csum for csum in checksums):
             return 0
@@ -102,9 +108,8 @@ def count_groups(springs, checksums, mid_group = False):
             return count_groups(springs[1:], [checksums[0] - 1] + checksums[1:], mid_group=True) + count_groups(springs[1:], checksums)
 
 
-total_count = 0
-
-for idx, line in enumerate(read_input(filename=args.filename)):
+def process_line(arg):
+    idx, line = arg
     springs, checksums = line.split()
     checksums = list(map(int, checksums.split(",")))
     if args.two:
@@ -113,6 +118,11 @@ for idx, line in enumerate(read_input(filename=args.filename)):
     #springs = [grp for grp in springs.split(".") if grp]
     line_count = count_groups(springs, checksums)
     print(f"line {idx+1}/1000: {line}, count {line_count}")
-    total_count += line_count
+    return line_count
 
-print(total_count)
+
+mp_args = [[idx, line] for idx, line in enumerate(read_input(filename=args.filename))]
+with Pool(args.poolsize) as mp_pool:
+    sums = mp_pool.map(process_line, mp_args)
+
+print(sum(sums))
