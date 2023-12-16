@@ -35,7 +35,7 @@ def transpose(pattern):
        result.append(''.join(line[idx] for line in pattern))
     return result 
 
-def score(pattern):
+def score(pattern, prev=None):
     # find all the possible midpoints on each line and their widths
     all_lines_midpoints = []
     for line in pattern:
@@ -61,12 +61,19 @@ def score(pattern):
     # weighted_mps becomes a list of tuples
     # first element is the min width of a reflection around a midpoint across all lines
     # second element is the index to the right of the midpoint
-    weighted_mps = [(min([wp[1] for midpoints in all_lines_midpoints for wp in midpoints if wp[0] == m]), int(m)+1) for m in mp]
+    weighted_mps = set([(min([wp[1] for midpoints in all_lines_midpoints for wp in midpoints if wp[0] == m]), int(m)+1) for m in mp])
     if not weighted_mps:
         return (0, 0)
     #if all(wmp[0] <= 2 for wmp in weighted_mps):
     #    return (0, 0)
 
+    if args.two:
+        weighted_mps = weighted_mps - set([prev])
+
+    if not weighted_mps:
+        return (0, 0)
+
+    weighted_mps = list(weighted_mps)
     # sort on the minimum reflected width around each line of reflection
     weighted_mps.sort()
 
@@ -74,25 +81,32 @@ def score(pattern):
     return weighted_mps[-1]
 
 total = 0
+part2_total = 0
 for idx, pattern in enumerate(patterns):
     left = score(pattern)
     top = score(transpose(pattern))
-    if idx == 8:
-        print_pattern(pattern)
-        print(left)
-        print()
-        print_pattern(transpose(pattern))
-        print(top)
-        print()
-        print()
-        print(f"{idx} Our answer: ", end="")
-        if left[0] > top[0]:
-            print(left[1], end=", ")
-        else:
-            print(100 * top[1], end=", ")
-        print(f"correct answer: {correct[idx]}") 
     if left[0] > top[0]:
         total += left[1]
     else:
         total += 100 * top[1]
-print(total)
+    if args.two:
+        pattern_scores = []
+        for row_idx, line in enumerate(pattern):
+            for line_idx, val in enumerate(line):
+                if val == "#":
+                    new_val = "."
+                else:
+                    new_val = "#"
+                pattern[row_idx] = pattern[row_idx][:line_idx] + new_val + pattern[row_idx][line_idx+1:]
+                _left = score(pattern, prev=left)
+                _top = score(transpose(pattern), prev=top)
+                if _left[0] > _top[0]:
+                    pattern_scores.append(_left[1])
+                else:
+                    pattern_scores.append(100 * _top[1])
+                pattern[row_idx] = line
+        part2_total += max(pattern_scores)
+                
+print(f"Part 1: {total}")
+if args.two:
+    print(f"Part 2: {part2_total}")
