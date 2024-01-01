@@ -4,6 +4,7 @@ import sys
 sys.path.append("..")
 
 from argparse import ArgumentParser
+from functools import cache
 from lib import *
 from multiprocessing import Pool
 
@@ -37,7 +38,7 @@ def brute_force_count_groups(springs, checksums):
             count += 1
     return count
 
-
+@cache
 def count_groups(springs, checksums, mid_group = False):
     #print(f"count_groups({springs}, {checksums}, mid_group = {mid_group}")
     """
@@ -59,7 +60,7 @@ def count_groups(springs, checksums, mid_group = False):
     If this call finds a "?" while mid_group is False, branch as above.
     
     """
-    checksums = checksums[:]
+    checksums = list(checksums[:])
 
     if not checksums:
         if "#" in springs:
@@ -77,11 +78,11 @@ def count_groups(springs, checksums, mid_group = False):
     if springs[0] == ".":
         if mid_group:
             if checksums[0] == 0:
-                return count_groups(springs[1:], checksums[1:])
+                return count_groups(springs[1:], tuple(checksums[1:]))
             else:
                 return 0
         else:
-            return count_groups(springs[1:], checksums)
+            return count_groups(springs[1:], tuple(checksums))
 
     if springs[0] == "#":
         if mid_group:
@@ -89,11 +90,11 @@ def count_groups(springs, checksums, mid_group = False):
                 return 0
             else:
                 checksums[0] -= 1
-                return count_groups(springs[1:], checksums, mid_group=True)
+                return count_groups(springs[1:], tuple(checksums), mid_group=True)
         else:
             if checksums[0]:
                 checksums[0] -= 1
-                return count_groups(springs[1:], checksums, mid_group=True)
+                return count_groups(springs[1:], tuple(checksums), mid_group=True)
             else:
                 return 0
 
@@ -101,11 +102,12 @@ def count_groups(springs, checksums, mid_group = False):
         if mid_group:
             if checksums[0]:
                 checksums[0] -= 1
-                return count_groups(springs[1:], checksums, mid_group=True)
+                return count_groups(springs[1:], tuple(checksums), mid_group=True)
             else:
-                return count_groups(springs[1:], checksums[1:])
+                return count_groups(springs[1:], tuple(checksums[1:]))
         else:
-            return count_groups(springs[1:], [checksums[0] - 1] + checksums[1:], mid_group=True) + count_groups(springs[1:], checksums)
+            return count_groups(springs[1:], tuple([checksums[0] - 1] + checksums[1:]), mid_group=True) + count_groups(springs[1:], tuple(checksums))
+
 
 
 def process_line(arg):
@@ -116,7 +118,7 @@ def process_line(arg):
         springs = "?".join((springs, springs, springs, springs, springs))
         checksums = 5 * checksums
     #springs = [grp for grp in springs.split(".") if grp]
-    line_count = count_groups(springs, checksums)
+    line_count = count_groups(springs, tuple(checksums))
     print(f"line {idx+1}/1000: {line}, count {line_count}")
     return line_count
 
