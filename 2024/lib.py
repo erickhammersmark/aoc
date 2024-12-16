@@ -26,13 +26,13 @@ class Board(list):
         except Exception as e:
             return default
 
-    def neighbors(self, pos, diagonal=False):
+    def neighbors(self, pos, diagonal=False, include_oob=False):
         neighbors = []
         for row in range(pos[0] - 1, pos[0] + 2):
             for col in range(pos[1] - 1, pos[1] + 2):
                 if row == pos[0] and col == pos[1]:
                     continue
-                if not self.oob((row, col)):
+                if include_oob or not self.oob((row, col)):
                     if not diagonal and row != pos[0] and col != pos[1]:
                         continue
                     neighbors.append((row, col))
