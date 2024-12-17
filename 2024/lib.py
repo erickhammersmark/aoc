@@ -21,6 +21,8 @@ class Board(list):
             self.append(line)
 
     def get(self, pos, default=None):
+        if self.oob(pos):
+            return default
         try:
             return self[pos[0]][pos[1]]
         except Exception as e:
@@ -55,6 +57,47 @@ class Board(list):
         if pos[0] >= len(self) or pos[1] >= len(self[0]):
             return True
         return False
+
+    dir_to_english = {
+        (1, 0): "down",
+        (-1, 0): "up",
+        (0, 1): "right",
+        (0, -1): "left",
+    }
+
+    def direction(self, _from, _to, english=False):
+        """
+        up, down, left, right only.
+        """
+        if _from[0] != _to[0] and _from[1] != _to[1]:
+            return None
+        if _from == _to:
+            return None
+        
+        _dir = tuple(1 if t > f else -1 if f > t else 0 for t, f in zip(_to, _from))
+        if english:
+            return self.dir_to_english[_dir]
+        return _dir
+
+    def points_between(self, _from, _to):
+        """
+        Only supports pairs along a straight line.
+        Includes _to, does not include _from.
+        """
+        if _from[0] != _to[0] and _from[1] != _to[1]:
+            return []
+        if _from == _to:
+            return []
+        DIR = 0
+        if _from[DIR] == _to[DIR]:
+            DIR = 1
+        delta = 1 if _to[DIR] > _from[DIR] else -1 if _from[DIR] > _to[DIR] else 0
+        point = list(_from)
+        points = []
+        while point[DIR] != _to[DIR]:
+            point[DIR] += delta
+            points.append(tuple(point))
+        return points
 
     def pos_difference(self, _from, _to):
         return (_to[0] - _from[0], _to[1] - _from[1])
