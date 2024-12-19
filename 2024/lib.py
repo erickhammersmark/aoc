@@ -5,13 +5,13 @@ def read_input(filename="input.txt"):
         return [l.rstrip("\n") for l in INPUT.readlines()]
 
 class Board(list):
-    def __init__(self, filename=None, try_type=None, example=False, *args):
-        if example:
+    def __init__(self, *args, filename=None, try_type=None, example=False):
+        if args:
+            lines = args[0]
+        elif example:
             lines = read_input(filename="example.txt")
         elif filename is not None:
             lines = read_input(filename=filename)
-        elif args:
-            lines = args[0]
         else:
             lines = read_input()
         for line in lines:
@@ -24,6 +24,20 @@ class Board(list):
                         pass
             self.append(line)
 
+    def find(self, target, findall=False):
+        results = []
+        for idx, row in enumerate(self):
+            for col, val in enumerate(row):
+                if val == target:
+                    if not findall:
+                        return (idx, col)
+                    results.append(idx, col)
+        return results
+
+    def print(self):
+        for row in self:
+            print("".join(map(str,row)))
+
     def get(self, pos, default=None):
         if self.oob(pos):
             return default
@@ -31,6 +45,13 @@ class Board(list):
             return self[pos[0]][pos[1]]
         except Exception as e:
             return default
+
+    def set(self, pos, val):
+        if not pos or len(pos) != 2:
+            return False
+        if self.oob(pos):
+            return False
+        self[pos[0]][pos[1]] = val
 
     def neighbors(self, pos, diagonal=False, include_oob=False):
         neighbors = []
