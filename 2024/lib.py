@@ -5,9 +5,13 @@ def read_input(filename="input.txt"):
         return [l.rstrip("\n") for l in INPUT.readlines()]
 
 class Board(list):
-    def __init__(self, filename=None, try_type=None):
-        if filename is not None:
+    def __init__(self, filename=None, try_type=None, example=False, *args):
+        if example:
+            lines = read_input(filename="example.txt")
+        elif filename is not None:
             lines = read_input(filename=filename)
+        elif args:
+            lines = args[0]
         else:
             lines = read_input()
         for line in lines:
